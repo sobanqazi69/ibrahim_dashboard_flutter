@@ -54,11 +54,12 @@ class SensorApiService {
       );
 
       developer.log('API Response Status: ${response.statusCode}');
+      developer.log('API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         final sensorResponse = SensorDataResponse.fromJson(jsonData);
-        
+
         developer.log('Successfully fetched ${sensorResponse.data.length} sensor records');
         return sensorResponse;
       } else {

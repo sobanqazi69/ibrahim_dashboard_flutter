@@ -210,7 +210,7 @@ enum SensorMetric {
   airoTemp('airo_temp', 'Air Outlet Temperature', '°C'),
   boosterStatus('booster_status', 'Booster Status', ''),
   boostoTemp('boosto_temp', 'Booster Temperature', '°C'),
-  compOnStatus('comp_on_status', 'Ambient Temperature', '°C'),
+  compOnStatus('comp_on_status', 'Status', ''),
   drypdpTemp('drypdp_temp', 'Dryer Temperature', '°C'),
   oxygen('oxygen', 'Oxygen Purity', '%'),
   airOutletp('air_outletp', 'Oxygen Flow', 'm³/hr'),
@@ -246,7 +246,8 @@ enum SensorMetric {
   // SCC-specific display names for Dryer and Booster sections
   pdpTemp('oxygen', 'PDP Temperature', '°C'),
   boosterTemp('drypdp_temp', 'Booster Temperature', '°C'),
-  boosterRunningHours('booster_hour', 'Booster Running Hours', 'hrs');
+  boosterRunningHours('booster_hour', 'Booster Running Hours', 'hrs'),
+  boosterPressure('oxy_flow', 'Pressure', 'Bar');
 
   const SensorMetric(this.key, this.displayName, this.unit);
 
@@ -332,6 +333,8 @@ enum SensorMetric {
           return data.drypdpTemp ?? 0.0;
         case SensorMetric.boosterRunningHours:
           return data.boosterHour ?? 0.0;
+        case SensorMetric.boosterPressure:
+          return data.oxyFlow ?? 0.0;
       }
     } catch (e) {
       return 0.0;

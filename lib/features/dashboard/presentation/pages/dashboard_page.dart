@@ -507,128 +507,82 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildMetricsGrid(SensorData? sensorData, bool isLoading) {
-    // For SCC (Bahawalpur) system, create two distinct sections
+    // For SCC (Bahawalpur) system, create distinct sections
     if (widget.systemType == 'SCC') {
       return _buildSCCSections(sensorData, isLoading);
     }
-    
-    // For RIC system, use the original grid layout
-    final allMetrics = [
-      SensorMetric.oxygen,
-      // SensorMetric.oxyFlow,
-      SensorMetric.oxyPressure,
-      SensorMetric.compLoad,
-      SensorMetric.compRunningHour,
-      SensorMetric.airiTemp,
-      SensorMetric.airoTemp,
-      // SensorMetric.airOutletp,
-      SensorMetric.drypdpTemp,
-      SensorMetric.boostoTemp,
-      SensorMetric.boosterHour,
-      SensorMetric.compOnStatus,
-      SensorMetric.boosterStatus,
-    ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Determine grid layout based on screen size
-        int crossAxisCount;
-        double childAspectRatio;
+    // For RIC system, use sectioned layout
+    return _buildRICSections(sensorData, isLoading);
+  }
 
-        if (constraints.maxWidth < 600) {
-          crossAxisCount = 2;
-          childAspectRatio = 1.0;
-        } else if (constraints.maxWidth < 900) {
-          crossAxisCount = 3;
-          childAspectRatio = 1.1;
-        } else if (constraints.maxWidth < 1200) {
-          crossAxisCount = 4;
-          childAspectRatio = 1.2;
-        } else {
-          crossAxisCount = 5;
-          childAspectRatio = 1.3;
-        }
+  Widget _buildRICSections(SensorData? sensorData, bool isLoading) {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // PSA Oxygen Generator's Parameters Section
+              _buildSectionHeader('PSA Oxygen Generator\'s Parameters'),
+              const SizedBox(height: 16),
+              _buildMetricsSection([
+                SensorMetric.oxygen,
+                SensorMetric.oxyPressure,
+              ], sensorData, isLoading),
 
-        return Stack(
-          children: [
-            GridView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: childAspectRatio,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: allMetrics.length,
-              itemBuilder: (context, index) {
-                final metric = allMetrics[index];
+              const SizedBox(height: 32),
 
-                if (isLoading || sensorData == null) {
-                  return _buildShimmerGauge();
-                }
+              // Compressor's Parameters Section
+              _buildSectionHeader('Compressor\'s Parameters'),
+              const SizedBox(height: 16),
+              _buildMetricsSection([
+                SensorMetric.compLoad,
+                SensorMetric.compOnStatus,
+                SensorMetric.airiTemp,
+                SensorMetric.airoTemp,
+                SensorMetric.compRunningHour,
+              ], sensorData, isLoading),
 
-                final value = metric.getValue(sensorData);
-                final maxValue = _getMaxValueForMetric(metric);
-                final color = _getColorForMetric(metric);
-                final hasData = _hasMetricData(metric, sensorData);
+              const SizedBox(height: 32),
 
-                return Hero(
-                  tag: 'metric-${metric.key}',
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: GestureDetector(
-                      onTap: hasData ? () => _navigateToMetricDetail(metric, value) : null,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: hasData ? Colors.grey.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: hasData
-                              ? MetricGauge(
-                                  title: metric.displayName,
-                                  value: value,
-                                  unit: metric.unit,
-                                  maxValue: maxValue,
-                                  color: color,
-                                )
-                              : _buildNoDataGauge(metric, color),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            // Scroll buttons
-            Positioned(
-              right: 16,
-              top: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildScrollButton(Icons.keyboard_arrow_up, _scrollUp),
-                  const SizedBox(height: 8),
-                  _buildScrollButton(Icons.keyboard_arrow_down, _scrollDown),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+              // Dryer's Parameters Section
+              _buildSectionHeader('Dryer\'s Parameters'),
+              const SizedBox(height: 16),
+              _buildMetricsSection([
+                SensorMetric.drypdpTemp,
+              ], sensorData, isLoading),
+
+              const SizedBox(height: 32),
+
+              // Booster's Parameters Section
+              _buildSectionHeader('Booster\'s Parameters'),
+              const SizedBox(height: 16),
+              _buildMetricsSection([
+                SensorMetric.boosterStatus,
+                SensorMetric.boostoTemp,
+                SensorMetric.boosterPressure,
+                SensorMetric.boosterHour,
+              ], sensorData, isLoading),
+            ],
+          ),
+        ),
+        // Scroll buttons
+        Positioned(
+          right: 16,
+          top: 0,
+          bottom: 0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildScrollButton(Icons.keyboard_arrow_up, _scrollUp),
+              const SizedBox(height: 8),
+              _buildScrollButton(Icons.keyboard_arrow_down, _scrollDown),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -1252,6 +1206,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return 150;
       case SensorMetric.boosterRunningHours:
         return 1000;
+      case SensorMetric.boosterPressure:
+        return 50;
     }
   }
 
@@ -1334,6 +1290,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return const Color(0xFFF97316); // Orange for booster temperature
       case SensorMetric.boosterRunningHours:
         return const Color(0xFF64748B); // Slate for booster hours
+      case SensorMetric.boosterPressure:
+        return const Color(0xFF3B82F6); // Blue for booster pressure
     }
   }
 
