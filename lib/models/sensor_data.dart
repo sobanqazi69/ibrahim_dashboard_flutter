@@ -206,8 +206,8 @@ class SensorDataPagination {
 // Enum to define all available sensor metrics
 enum SensorMetric {
   // RIC metrics
-  airiTemp('airi_temp', 'Air Inlet Temperature', '°C'),
-  airoTemp('airo_temp', 'Air Outlet Temperature', '°C'),
+  airiTemp('airi_temp', 'Ambient Temperature', '°C'),
+  airoTemp('airo_temp', 'Discharge Temperature', '°C'),
   boosterStatus('booster_status', 'Booster Status', ''),
   boostoTemp('boosto_temp', 'Booster Temperature', '°C'),
   compOnStatus('comp_on_status', 'Status', ''),
@@ -247,7 +247,8 @@ enum SensorMetric {
   pdpTemp('oxygen', 'PDP Temperature', '°C'),
   boosterTemp('drypdp_temp', 'Booster Temperature', '°C'),
   boosterRunningHours('booster_hour', 'Booster Running Hours', 'hrs'),
-  boosterPressure('oxy_flow', 'Pressure', 'Bar');
+  boosterPressure('oxy_flow', 'Pressure', 'Bar'),
+  dischargePressure('air_outletp', 'Discharge Pressure', 'Bar');
 
   const SensorMetric(this.key, this.displayName, this.unit);
 
@@ -335,6 +336,8 @@ enum SensorMetric {
           return data.boosterHour ?? 0.0;
         case SensorMetric.boosterPressure:
           return data.oxyFlow ?? 0.0;
+        case SensorMetric.dischargePressure:
+          return data.airOutletp ?? 0.0;
       }
     } catch (e) {
       return 0.0;

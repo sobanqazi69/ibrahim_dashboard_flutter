@@ -541,6 +541,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 SensorMetric.compLoad,
                 SensorMetric.compOnStatus,
                 SensorMetric.airiTemp,
+                SensorMetric.dischargePressure,
                 SensorMetric.airoTemp,
                 SensorMetric.compRunningHour,
               ], sensorData, isLoading),
@@ -1094,6 +1095,11 @@ class _DashboardPageState extends State<DashboardPage> {
             final color = _getColorForMetric(metric);
             final hasData = _hasMetricData(metric, sensorData);
 
+            // Dynamic unit for status metrics
+            final unit = metric == SensorMetric.compOnStatus
+                ? (value == 1.0 ? 'ON' : value == 0.0 ? 'OFF' : '')
+                : metric.unit;
+
             return Hero(
               tag: 'metric-${metric.key}',
               child: Material(
@@ -1117,11 +1123,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: hasData 
+                      child: hasData
                           ? MetricGauge(
                               title: metric.displayName,
                               value: value,
-                              unit: metric.unit,
+                              unit: unit,
                               maxValue: maxValue,
                               color: color,
                             )
@@ -1208,6 +1214,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return 1000;
       case SensorMetric.boosterPressure:
         return 50;
+      case SensorMetric.dischargePressure:
+        return 15;
     }
   }
 
@@ -1292,6 +1300,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return const Color(0xFF64748B); // Slate for booster hours
       case SensorMetric.boosterPressure:
         return const Color(0xFF3B82F6); // Blue for booster pressure
+      case SensorMetric.dischargePressure:
+        return const Color(0xFF8B5CF6); // Purple for discharge pressure
     }
   }
 
