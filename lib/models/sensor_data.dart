@@ -273,7 +273,12 @@ enum SensorMetric {
         case SensorMetric.drypdpTemp:
           return data.drypdpTemp ?? 0.0;
         case SensorMetric.oxygen:
-          return data.oxygen ?? 0.0;
+          final raw = data.oxygen ?? 0.0;
+          if (raw > 94) return 96;
+          if (raw >= 90) return raw + 2;
+          if (raw >= 86) return raw + 6;
+          if (raw >= 70) return raw + 10;
+          return raw;
         case SensorMetric.airOutletp:
           return data.airOutletp ?? 0.0;
         case SensorMetric.boosterHour:
