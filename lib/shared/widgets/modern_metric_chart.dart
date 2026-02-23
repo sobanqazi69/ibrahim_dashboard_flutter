@@ -63,10 +63,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
   List<MetricData> get _visibleData {
     if (widget.data.isEmpty) return [];
     
-    // First filter out zero values
-    final filteredData = widget.data.where((data) => data.value != 0.0).toList();
-    
-    if (filteredData.isEmpty) return [];
+    final filteredData = widget.data;
     
     // Calculate how many data points to show based on zoom level
     final pointsPerHour = filteredData.length / 24; // Assuming 24 hours of data
@@ -86,6 +83,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
     
     if (widget.maxValue == double.infinity) {
       double maxInData = visibleData.fold(0.0, (max, item) => math.max(max, item.value));
+      if (maxInData == 0) return 1.0; // Avoid zero range
       return maxInData * 1.02; // 2% padding for minimal look
     }
     return widget.maxValue;
@@ -214,7 +212,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
             gridData: FlGridData(
               show: true,
               drawVerticalLine: true,
-              horizontalInterval: (effectiveMaxValue - effectiveMinValue) / 3,
+              horizontalInterval: math.max(1, (effectiveMaxValue - effectiveMinValue) / 3),
               verticalInterval: math.max(1, visibleData.length / 8),
               getDrawingHorizontalLine: (value) => FlLine(
                 color: Colors.grey.withOpacity(0.08),
@@ -350,7 +348,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
       leftTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          interval: (maxValue - minValue) / 3,
+          interval: math.max(1, (maxValue - minValue) / 3),
           reservedSize: 40,
           getTitlesWidget: (value, meta) {
             return Padding(

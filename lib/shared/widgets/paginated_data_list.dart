@@ -48,31 +48,16 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   int _getMaxPage() {
     if (widget.data.isEmpty) return 0;
     
-    // Filter out zero values for pagination calculation
-    final filteredData = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
-    
-    if (filteredData.isEmpty) return 0;
-    return ((filteredData.length - 1) / _itemsPerPage).floor();
+    return ((widget.data.length - 1) / _itemsPerPage).floor();
   }
 
   List<SensorData> _getCurrentPageData() {
     if (widget.data.isEmpty) return [];
     
-    // Filter out zero values
-    final filteredData = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
-    
-    if (filteredData.isEmpty) return [];
-    
     final startIndex = _currentPage * _itemsPerPage;
-    final endIndex = math.min(startIndex + _itemsPerPage, filteredData.length);
-    
-    return filteredData.sublist(startIndex, endIndex);
+    final endIndex = math.min(startIndex + _itemsPerPage, widget.data.length);
+
+    return widget.data.sublist(startIndex, endIndex);
   }
 
   void _goToPage(int page) {
@@ -468,12 +453,7 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   }
 
   int _getFilteredDataCount() {
-    if (widget.data.isEmpty) return 0;
-    
-    return widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).length;
+    return widget.data.length;
   }
 
   Map<String, double> _calculateQuickStats(List<SensorData> pageData) {
@@ -481,18 +461,8 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
       return {'latest': 0.0, 'average': 0.0};
     }
 
-    // Filter out zero values for statistics
-    final filteredData = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
-
-    if (filteredData.isEmpty) {
-      return {'latest': 0.0, 'average': 0.0};
-    }
-
     final values = pageData.map((data) => widget.metric.getValue(data)).toList();
-    final latest = widget.metric.getValue(filteredData.last);
+    final latest = widget.metric.getValue(widget.data.last);
     final average = values.reduce((a, b) => a + b) / values.length;
 
     return {
