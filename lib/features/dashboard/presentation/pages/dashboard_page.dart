@@ -534,6 +534,18 @@ class _DashboardPageState extends State<DashboardPage> {
 
               const SizedBox(height: 32),
 
+              // MedGas Analyzer's Parameters Section
+              _buildSectionHeader('MedGas Analyzer\'s Parameters'),
+              const SizedBox(height: 16),
+              _buildMetricsSection([
+                SensorMetric.ga1,
+                SensorMetric.ga2,
+                SensorMetric.ga3,
+                SensorMetric.ga4,
+              ], sensorData, isLoading),
+
+              const SizedBox(height: 32),
+
               // Compressor's Parameters Section
               _buildSectionHeader('Compressor\'s Parameters'),
               const SizedBox(height: 16),
@@ -710,7 +722,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildCompressorMetricsGrid(SensorData? sensorData, bool isLoading) {
     // Compressor parameters: ambient temperature, discharge temperature, pressure, current, voltage, power, maintenance hours, total running hours, total running hours on load
     final compressorMetrics = [
-      SensorMetric.compOnStatus,
+      SensorMetric.sccAmbientTemp,
       SensorMetric.mh5,
       SensorMetric.pressure,
       SensorMetric.i1,
@@ -1216,6 +1228,16 @@ class _DashboardPageState extends State<DashboardPage> {
         return 50;
       case SensorMetric.dischargePressure:
         return 15;
+      case SensorMetric.sccAmbientTemp:
+        return 100;
+      case SensorMetric.ga1:
+        return 100;
+      case SensorMetric.ga2:
+        return 100;
+      case SensorMetric.ga3:
+        return 100;
+      case SensorMetric.ga4:
+        return 100;
     }
   }
 
@@ -1302,6 +1324,16 @@ class _DashboardPageState extends State<DashboardPage> {
         return const Color(0xFF3B82F6); // Blue for booster pressure
       case SensorMetric.dischargePressure:
         return const Color(0xFF8B5CF6); // Purple for discharge pressure
+      case SensorMetric.sccAmbientTemp:
+        return const Color(0xFF06B6D4); // Cyan for ambient temperature
+      case SensorMetric.ga1:
+        return const Color(0xFFF59E0B); // Amber for SO2
+      case SensorMetric.ga2:
+        return const Color(0xFFEF4444); // Red for NO2
+      case SensorMetric.ga3:
+        return const Color(0xFF10B981); // Green for CO2
+      case SensorMetric.ga4:
+        return const Color(0xFF8B5CF6); // Purple for CO
     }
   }
 

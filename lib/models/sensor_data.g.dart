@@ -39,6 +39,10 @@ SensorData _$SensorDataFromJson(Map<String, dynamic> json) => SensorData(
   bedaPress: (json['beda_press'] as num?)?.toDouble(),
   bedbPress: (json['bedb_press'] as num?)?.toDouble(),
   recPress: (json['rec_press'] as num?)?.toDouble(),
+  ga1: (json['ga_1'] as num?)?.toDouble(),
+  ga2: (json['ga_2'] as num?)?.toDouble(),
+  ga3: (json['ga_3'] as num?)?.toDouble(),
+  ga4: (json['ga_4'] as num?)?.toDouble(),
   timestamp: json['timestamp'] as String?,
   id: (json['id'] as num).toInt(),
 );
@@ -77,6 +81,10 @@ Map<String, dynamic> _$SensorDataToJson(SensorData instance) =>
       'beda_press': instance.bedaPress,
       'bedb_press': instance.bedbPress,
       'rec_press': instance.recPress,
+      'ga_1': instance.ga1,
+      'ga_2': instance.ga2,
+      'ga_3': instance.ga3,
+      'ga_4': instance.ga4,
       'timestamp': instance.timestamp,
       'id': instance.id,
     };

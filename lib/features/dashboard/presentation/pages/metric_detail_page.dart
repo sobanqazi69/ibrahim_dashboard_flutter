@@ -124,7 +124,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        widget.currentValue.toStringAsFixed(1),
+                                        widget.currentValue.toStringAsFixed(2),
                                         style: const TextStyle(
                                           color: Color(0xFF4169E1),
                                           fontSize: 72,
@@ -265,7 +265,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          widget.currentValue.toStringAsFixed(1),
+                                          widget.currentValue.toStringAsFixed(2),
                                           style: const TextStyle(
                                             color: Color(0xFF4169E1),
                                             fontSize: 72,

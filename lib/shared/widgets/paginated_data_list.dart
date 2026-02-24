@@ -48,16 +48,27 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   int _getMaxPage() {
     if (widget.data.isEmpty) return 0;
     
-    return ((widget.data.length - 1) / _itemsPerPage).floor();
+    final filteredData = widget.data.where((data) {
+      final value = widget.metric.getValue(data);
+      return value != 0.0;
+    }).toList();
+    if (filteredData.isEmpty) return 0;
+    return ((filteredData.length - 1) / _itemsPerPage).floor();
   }
 
   List<SensorData> _getCurrentPageData() {
     if (widget.data.isEmpty) return [];
     
-    final startIndex = _currentPage * _itemsPerPage;
-    final endIndex = math.min(startIndex + _itemsPerPage, widget.data.length);
+    final filteredData = widget.data.where((data) {
+      final value = widget.metric.getValue(data);
+      return value != 0.0;
+    }).toList();
+    if (filteredData.isEmpty) return [];
 
-    return widget.data.sublist(startIndex, endIndex);
+    final startIndex = _currentPage * _itemsPerPage;
+    final endIndex = math.min(startIndex + _itemsPerPage, filteredData.length);
+
+    return filteredData.sublist(startIndex, endIndex);
   }
 
   void _goToPage(int page) {
@@ -185,7 +196,7 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
     if (label == 'Total Records') {
       displayValue = value.toInt().toString();
     } else {
-      displayValue = value.toStringAsFixed(1);
+      displayValue = value.toStringAsFixed(2);
     }
 
     return Column(
@@ -453,7 +464,10 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   }
 
   int _getFilteredDataCount() {
-    return widget.data.length;
+    return widget.data.where((data) {
+      final value = widget.metric.getValue(data);
+      return value != 0.0;
+    }).length;
   }
 
   Map<String, double> _calculateQuickStats(List<SensorData> pageData) {
@@ -462,7 +476,11 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
     }
 
     final values = pageData.map((data) => widget.metric.getValue(data)).toList();
-    final latest = widget.metric.getValue(widget.data.last);
+    final filteredAll = widget.data.where((data) {
+      final value = widget.metric.getValue(data);
+      return value != 0.0;
+    }).toList();
+    final latest = filteredAll.isNotEmpty ? widget.metric.getValue(filteredAll.last) : 0.0;
     final average = values.reduce((a, b) => a + b) / values.length;
 
     return {

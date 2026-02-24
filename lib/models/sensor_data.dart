@@ -6,42 +6,42 @@ part 'sensor_data.g.dart';
 class SensorData {
   @JsonKey(name: 'airi_temp')
   final double? airiTemp;
-  
+
   @JsonKey(name: 'airo_temp')
   final double? airoTemp;
-  
+
   @JsonKey(name: 'booster_status')
   final int? boosterStatus;
-  
+
   @JsonKey(name: 'boosto_temp')
   final double? boostoTemp;
-  
+
   @JsonKey(name: 'comp_on_status')
   final int? compOnStatus;
-  
+
   @JsonKey(name: 'drypdp_temp')
   final double? drypdpTemp;
-  
+
   final double? oxygen;
-  
+
   @JsonKey(name: 'air_outletp')
   final double? airOutletp;
-  
+
   @JsonKey(name: 'booster_hour')
   final double? boosterHour;
-  
+
   @JsonKey(name: 'comp_load')
   final double? compLoad;
-  
+
   @JsonKey(name: 'comp_running_hour')
   final double? compRunningHour;
-  
+
   @JsonKey(name: 'oxy_flow')
   final double? oxyFlow;
-  
+
   @JsonKey(name: 'oxy_pressure')
   final double? oxyPressure;
-  
+
   // SCC specific fields
   final double? pressure;
   final double? trh;
@@ -66,7 +66,7 @@ class SensorData {
   final double? power;
   @JsonKey(name: 'table_source')
   final String? tableSource;
-  
+
   // Additional merged fields from cloud_table
   @JsonKey(name: 'oxy_purity')
   final double? oxyPurity;
@@ -76,7 +76,17 @@ class SensorData {
   final double? bedbPress;
   @JsonKey(name: 'rec_press')
   final double? recPress;
-  
+
+  // MedGas Analyzer fields
+  @JsonKey(name: 'ga_1')
+  final double? ga1;
+  @JsonKey(name: 'ga_2')
+  final double? ga2;
+  @JsonKey(name: 'ga_3')
+  final double? ga3;
+  @JsonKey(name: 'ga_4')
+  final double? ga4;
+
   final String? timestamp;
   final int id;
 
@@ -113,11 +123,16 @@ class SensorData {
     this.bedaPress,
     this.bedbPress,
     this.recPress,
+    this.ga1,
+    this.ga2,
+    this.ga3,
+    this.ga4,
     this.timestamp,
     required this.id,
   });
 
-  factory SensorData.fromJson(Map<String, dynamic> json) => _$SensorDataFromJson(json);
+  factory SensorData.fromJson(Map<String, dynamic> json) =>
+      _$SensorDataFromJson(json);
   Map<String, dynamic> toJson() => _$SensorDataToJson(this);
 
   DateTime get parsedTimestamp {
@@ -150,7 +165,8 @@ class SensorDataResponse {
     this.warning,
   });
 
-  factory SensorDataResponse.fromJson(Map<String, dynamic> json) => _$SensorDataResponseFromJson(json);
+  factory SensorDataResponse.fromJson(Map<String, dynamic> json) =>
+      _$SensorDataResponseFromJson(json);
   Map<String, dynamic> toJson() => _$SensorDataResponseToJson(this);
 }
 
@@ -158,31 +174,31 @@ class SensorDataResponse {
 class SensorDataPagination {
   @JsonKey(name: 'total_records')
   final int totalRecords;
-  
+
   @JsonKey(name: 'total_pages')
   final int totalPages;
-  
+
   @JsonKey(name: 'current_page')
   final int currentPage;
-  
+
   @JsonKey(name: 'records_per_page')
   final int recordsPerPage;
-  
+
   @JsonKey(name: 'has_next')
   final bool hasNext;
-  
+
   @JsonKey(name: 'has_previous')
   final bool hasPrevious;
-  
+
   @JsonKey(name: 'next_page')
   final int? nextPage;
-  
+
   @JsonKey(name: 'previous_page')
   final int? previousPage;
-  
+
   @JsonKey(name: 'page_start_record')
   final int pageStartRecord;
-  
+
   @JsonKey(name: 'page_end_record')
   final int pageEndRecord;
 
@@ -199,7 +215,8 @@ class SensorDataPagination {
     required this.pageEndRecord,
   });
 
-  factory SensorDataPagination.fromJson(Map<String, dynamic> json) => _$SensorDataPaginationFromJson(json);
+  factory SensorDataPagination.fromJson(Map<String, dynamic> json) =>
+      _$SensorDataPaginationFromJson(json);
   Map<String, dynamic> toJson() => _$SensorDataPaginationToJson(this);
 }
 
@@ -219,7 +236,7 @@ enum SensorMetric {
   compRunningHour('comp_running_hour', 'Compressor Running Hours', 'hrs'),
   oxyFlow('oxy_flow', 'Oxygen Flow', 'm³/hr'),
   oxyPressure('oxy_pressure', 'Oxygen Pressure', 'Bar'),
-  
+
   // SCC metrics
   pressure('pressure', 'Pressure', 'Bar'),
   trh('trh', 'Total Running Hours', 'hrs'),
@@ -235,20 +252,26 @@ enum SensorMetric {
   mh5('mh_5', 'Discharge Temperature', '°C'),
   volts('volts', 'Voltage', 'V'),
   power('power', 'Power', 'kW'),
-  
+
   // Additional merged SCC metrics
   oxyPurity('oxy_purity', 'Oxygen Purity', '%'),
   bedaPress('beda_press', 'Bed A Pressure', 'PSI'),
   bedbPress('bedb_press', 'Bed B Pressure', 'PSI'),
   recPress('rec_press', 'Reciever Pressure', 'PSI'),
-  
+
+  // MedGas Analyzer metrics
+  ga1('ga_1', 'Sulphur Dioxide', 'PPM'),
+  ga2('ga_2', 'Nitrogen Dioxide', 'PPM'),
+  ga3('ga_3', 'Carbon Dioxide', '%Vol'),
+  ga4('ga_4', 'Carbon Monoxide', 'PPM'),
 
   // SCC-specific display names for Dryer and Booster sections
   pdpTemp('oxygen', 'PDP Temperature', '°C'),
   boosterTemp('drypdp_temp', 'Booster Temperature', '°C'),
   boosterRunningHours('booster_hour', 'Booster Running Hours', 'hrs'),
   boosterPressure('oxy_flow', 'Booster Pressure', 'Bar'),
-  dischargePressure('air_outletp', 'Discharge Pressure', 'Bar');
+  dischargePressure('air_outletp', 'Discharge Pressure', 'Bar'),
+  sccAmbientTemp('comp_on_status', 'Ambient Temperature', '°C');
 
   const SensorMetric(this.key, this.displayName, this.unit);
 
@@ -291,7 +314,7 @@ enum SensorMetric {
           return data.oxyFlow ?? 0.0;
         case SensorMetric.oxyPressure:
           return data.oxyPressure ?? 0.0;
-        
+
         // SCC metrics
         case SensorMetric.pressure:
           return data.pressure ?? 0.0;
@@ -321,7 +344,7 @@ enum SensorMetric {
           return data.volts ?? 0.0;
         case SensorMetric.power:
           return data.power ?? 0.0;
-        
+
         // Additional merged SCC metrics
         case SensorMetric.oxyPurity:
           return data.oxyPurity ?? 0.0;
@@ -331,6 +354,16 @@ enum SensorMetric {
           return data.bedbPress ?? 0.0;
         case SensorMetric.recPress:
           return data.recPress ?? 0.0;
+
+        // MedGas Analyzer metrics
+        case SensorMetric.ga1:
+          return data.ga1 ?? 0.0;
+        case SensorMetric.ga2:
+          return data.ga2 ?? 0.0;
+        case SensorMetric.ga3:
+          return data.ga3 ?? 0.0;
+        case SensorMetric.ga4:
+          return data.ga4 ?? 0.0;
 
         // SCC-specific display names for Dryer and Booster sections
         case SensorMetric.pdpTemp:
@@ -344,6 +377,8 @@ enum SensorMetric {
           return raw < 10 ? 0.0 : raw;
         case SensorMetric.dischargePressure:
           return data.airOutletp ?? 0.0;
+        case SensorMetric.sccAmbientTemp:
+          return (data.compOnStatus ?? 0).toDouble();
       }
     } catch (e) {
       return 0.0;

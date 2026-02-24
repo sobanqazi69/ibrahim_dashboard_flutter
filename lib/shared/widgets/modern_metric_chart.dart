@@ -63,7 +63,8 @@ class _ModernMetricChartState extends State<ModernMetricChart>
   List<MetricData> get _visibleData {
     if (widget.data.isEmpty) return [];
     
-    final filteredData = widget.data;
+    final filteredData = widget.data.where((data) => data.value != 0.0).toList();
+    if (filteredData.isEmpty) return [];
     
     // Calculate how many data points to show based on zoom level
     final pointsPerHour = filteredData.length / 24; // Assuming 24 hours of data
@@ -170,7 +171,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
           ),
         ),
         Text(
-          value.toStringAsFixed(1),
+          value.toStringAsFixed(2),
           style: TextStyle(
             color: color,
             fontSize: 13,

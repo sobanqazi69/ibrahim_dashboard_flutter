@@ -4,10 +4,11 @@ import 'package:http/http.dart' as http;
 import '../models/sensor_data.dart';
 
 class SensorApiService {
-  static const String _baseUrl = 'https://cloud-dashboard-git-main-sobans-projects-af793893.vercel.app/api';
+  static const String _baseUrl =
+      'https://cloud-dashboard-git-main-sobans-projects-af793893.vercel.app/api';
   static const String _sensorDataEndpoint = '/sensor-data';
   static const String _sccEndpoint = '/scc/all';
-  
+
   // Singleton instance
   static SensorApiService? _instance;
   final http.Client _client;
@@ -31,27 +32,29 @@ class SensorApiService {
         developer.log('SensorApiService is disposed, cannot fetch data');
         throw Exception('Service is disposed');
       }
-      
-      developer.log('Fetching sensor data from API - Page: $page, Limit: $limit');
-      
-      final uri = Uri.parse('$_baseUrl$_sensorDataEndpoint')
-          .replace(queryParameters: {
-        'page': page.toString(),
-        'limit': limit.toString(),
-      });
 
-      final response = await _client.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Request timeout - API took too long to respond');
-        },
+      developer.log(
+        'Fetching sensor data from API - Page: $page, Limit: $limit',
       );
+
+      final uri = Uri.parse('$_baseUrl$_sensorDataEndpoint').replace(
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
+      );
+
+      final response = await _client
+          .get(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Request timeout - API took too long to respond');
+            },
+          );
 
       developer.log('API Response Status: ${response.statusCode}');
       developer.log('API Response Body: ${response.body}');
@@ -60,11 +63,23 @@ class SensorApiService {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         final sensorResponse = SensorDataResponse.fromJson(jsonData);
 
-        developer.log('Successfully fetched ${sensorResponse.data.length} sensor records');
+        developer.log(
+          'Successfully fetched ${sensorResponse.data.length} sensor records',
+        );
+        if (sensorResponse.data.isNotEmpty) {
+          final d = sensorResponse.data.first;
+          developer.log(
+            'MedGas values - ga1: ${d.ga1}, ga2: ${d.ga2}, ga3: ${d.ga3}, ga4: ${d.ga4}',
+          );
+        }
         return sensorResponse;
       } else {
-        developer.log('API Error: Status ${response.statusCode}, Body: ${response.body}');
-        throw Exception('Failed to fetch sensor data: HTTP ${response.statusCode}');
+        developer.log(
+          'API Error: Status ${response.statusCode}, Body: ${response.body}',
+        );
+        throw Exception(
+          'Failed to fetch sensor data: HTTP ${response.statusCode}',
+        );
       }
     } catch (e) {
       developer.log('Error fetching sensor data: $e');
@@ -82,39 +97,45 @@ class SensorApiService {
         developer.log('SensorApiService is disposed, cannot fetch SCC data');
         throw Exception('Service is disposed');
       }
-      
+
       developer.log('Fetching SCC data from API - Page: $page, Limit: $limit');
-      
+
       final uri = Uri.parse('$_baseUrl$_sccEndpoint');
 
-      final response = await _client.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Request timeout - API took too long to respond');
-        },
-      );
+      final response = await _client
+          .get(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Request timeout - API took too long to respond');
+            },
+          );
 
       developer.log('SCC API Response Status: ${response.statusCode}');
-      developer.log('SCC API Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
+      developer.log(
+        'SCC API Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...',
+      );
 
       if (response.statusCode == 200) {
         try {
           final jsonData = json.decode(response.body) as Map<String, dynamic>;
-          
+
           // SCC API has a different response format
           if (jsonData.containsKey('success') && jsonData.containsKey('data')) {
             // SCC API format: {"success": true, "message": "...", "data": [...]}
             final List<dynamic> dataList = jsonData['data'] as List<dynamic>;
             final List<SensorData> sensorDataList = dataList
-                .map((item) => SensorData.fromJson(item as Map<String, dynamic>))
+                .map(
+                  (item) => SensorData.fromJson(item as Map<String, dynamic>),
+                )
                 .toList();
-            
+
             final sensorResponse = SensorDataResponse(
               success: true,
               message: 'SCC data fetched successfully',
@@ -131,13 +152,17 @@ class SensorApiService {
                 pageEndRecord: sensorDataList.length,
               ),
             );
-            
-            developer.log('Successfully fetched ${sensorResponse.data.length} SCC records');
+
+            developer.log(
+              'Successfully fetched ${sensorResponse.data.length} SCC records',
+            );
             return sensorResponse;
           } else {
             // Fallback to standard format
             final sensorResponse = SensorDataResponse.fromJson(jsonData);
-            developer.log('Successfully fetched ${sensorResponse.data.length} SCC records');
+            developer.log(
+              'Successfully fetched ${sensorResponse.data.length} SCC records',
+            );
             return sensorResponse;
           }
         } catch (jsonError) {
@@ -146,8 +171,12 @@ class SensorApiService {
           throw Exception('Failed to parse SCC API response: $jsonError');
         }
       } else {
-        developer.log('SCC API Error: Status ${response.statusCode}, Body: ${response.body}');
-        throw Exception('Failed to fetch SCC data: HTTP ${response.statusCode}');
+        developer.log(
+          'SCC API Error: Status ${response.statusCode}, Body: ${response.body}',
+        );
+        throw Exception(
+          'Failed to fetch SCC data: HTTP ${response.statusCode}',
+        );
       }
     } catch (e) {
       developer.log('Error fetching SCC data: $e');
@@ -155,11 +184,74 @@ class SensorApiService {
     }
   }
 
-  /// Gets the latest sensor data (first record from the API)
+  /// Gets the latest sensor data by merging cloud_table and Medgas_analyzer records
   Future<SensorData?> getLatestSensorData() async {
     try {
-      final response = await getSensorData(page: 1, limit: 1);
-      return response.data.isNotEmpty ? response.data.first : null;
+      // Fetch a small batch to find both cloud_table and Medgas_analyzer records
+      final response = await getSensorData(page: 1, limit: 10);
+      if (response.data.isEmpty) return null;
+
+      SensorData? cloudRecord;
+      SensorData? medgasRecord;
+
+      for (final record in response.data) {
+        if (cloudRecord == null && record.tableSource != 'Medgas_analyzer') {
+          cloudRecord = record;
+        }
+        if (medgasRecord == null && record.tableSource == 'Medgas_analyzer') {
+          medgasRecord = record;
+        }
+        if (cloudRecord != null && medgasRecord != null) break;
+      }
+
+      // If we only have one type, return it
+      if (cloudRecord == null) return medgasRecord;
+      if (medgasRecord == null) return cloudRecord;
+
+      // Merge: use cloud_table as base, overlay ga values from Medgas_analyzer
+      developer.log(
+        'Merging cloud_table (id:${cloudRecord.id}) with Medgas_analyzer (id:${medgasRecord.id})',
+      );
+      return SensorData(
+        airiTemp: cloudRecord.airiTemp,
+        airoTemp: cloudRecord.airoTemp,
+        boosterStatus: cloudRecord.boosterStatus,
+        boostoTemp: cloudRecord.boostoTemp,
+        compOnStatus: cloudRecord.compOnStatus,
+        drypdpTemp: cloudRecord.drypdpTemp,
+        oxygen: cloudRecord.oxygen,
+        airOutletp: cloudRecord.airOutletp,
+        boosterHour: cloudRecord.boosterHour,
+        compLoad: cloudRecord.compLoad,
+        compRunningHour: cloudRecord.compRunningHour,
+        oxyFlow: cloudRecord.oxyFlow,
+        oxyPressure: cloudRecord.oxyPressure,
+        pressure: cloudRecord.pressure,
+        trh: cloudRecord.trh,
+        trhOnLoad: cloudRecord.trhOnLoad,
+        i1: cloudRecord.i1,
+        i2: cloudRecord.i2,
+        i3: cloudRecord.i3,
+        contMode: cloudRecord.contMode,
+        mh1: cloudRecord.mh1,
+        mh2: cloudRecord.mh2,
+        mh3: cloudRecord.mh3,
+        mh4: cloudRecord.mh4,
+        mh5: cloudRecord.mh5,
+        volts: cloudRecord.volts,
+        power: cloudRecord.power,
+        tableSource: cloudRecord.tableSource,
+        oxyPurity: cloudRecord.oxyPurity,
+        bedaPress: cloudRecord.bedaPress,
+        bedbPress: cloudRecord.bedbPress,
+        recPress: cloudRecord.recPress,
+        ga1: medgasRecord.ga1,
+        ga2: medgasRecord.ga2,
+        ga3: medgasRecord.ga3,
+        ga4: medgasRecord.ga4,
+        timestamp: cloudRecord.timestamp,
+        id: cloudRecord.id,
+      );
     } catch (e) {
       developer.log('Error fetching latest sensor data: $e');
       rethrow;
@@ -167,51 +259,69 @@ class SensorApiService {
   }
 
   /// Gets the latest non-null value for a specific metric by checking previous records
-  Future<double?> getLatestNonNullValueForMetric(SensorMetric metric, {int maxRecords = 50}) async {
+  Future<double?> getLatestNonNullValueForMetric(
+    SensorMetric metric, {
+    int maxRecords = 50,
+  }) async {
     try {
-      developer.log('Looking for latest non-null value for metric: ${metric.key}');
-      
+      developer.log(
+        'Looking for latest non-null value for metric: ${metric.key}',
+      );
+
       final response = await getSensorData(page: 1, limit: maxRecords);
-      
+
       for (final data in response.data) {
         final value = metric.getValue(data);
         final hasData = _hasMetricData(metric, data);
-        
+
         if (hasData && value != 0.0) {
           developer.log('Found non-null value for ${metric.key}: $value');
           return value;
         }
       }
-      
-      developer.log('No non-null value found for ${metric.key} in $maxRecords records');
+
+      developer.log(
+        'No non-null value found for ${metric.key} in $maxRecords records',
+      );
       return null;
     } catch (e) {
-      developer.log('Error getting latest non-null value for ${metric.key}: $e');
+      developer.log(
+        'Error getting latest non-null value for ${metric.key}: $e',
+      );
       return null;
     }
   }
 
   /// Gets the latest non-null value for a specific SCC metric by checking previous records
-  Future<double?> getLatestNonNullSCCValueForMetric(SensorMetric metric, {int maxRecords = 50}) async {
+  Future<double?> getLatestNonNullSCCValueForMetric(
+    SensorMetric metric, {
+    int maxRecords = 50,
+  }) async {
     try {
-      developer.log('Looking for latest non-null SCC value for metric: ${metric.key}');
-      
+      developer.log(
+        'Looking for latest non-null SCC value for metric: ${metric.key}',
+      );
+
       final response = await getSCCData(page: 1, limit: maxRecords);
-      
+
       for (final data in response.data) {
         final value = metric.getValue(data);
         final hasData = _hasMetricData(metric, data);
-        
+
         if (hasData && value != 0.0) {
           developer.log('Found non-null SCC value for ${metric.key}: $value');
           return value;
         }
       }
-      
-      developer.log('No non-null SCC value found for ${metric.key} in $maxRecords records');
+
+      developer.log(
+        'No non-null SCC value found for ${metric.key} in $maxRecords records',
+      );
       return null;
     } catch (e) {
-      developer.log('Error getting latest non-null SCC value for ${metric.key}: $e');
+      developer.log(
+        'Error getting latest non-null SCC value for ${metric.key}: $e',
+      );
       return null;
     }
   }
@@ -335,7 +445,9 @@ class SensorApiService {
               final value = metric.getValue(data);
               if (value != 0.0) {
                 fallbackValues[metric.key] = value;
-                developer.log('Using fallback value for ${metric.key}: $value (${timeDifference.inSeconds}s old)');
+                developer.log(
+                  'Using fallback value for ${metric.key}: $value (${timeDifference.inSeconds}s old)',
+                );
                 break;
               }
             }
@@ -396,22 +508,28 @@ class SensorApiService {
   bool isPlantDeactivated(SensorData? latestData) {
     try {
       if (latestData == null) {
-        developer.log('No sensor data available - plant considered deactivated');
+        developer.log(
+          'No sensor data available - plant considered deactivated',
+        );
         return true;
       }
 
       final now = DateTime.now();
       final dataTime = latestData.parsedTimestamp;
       final timeDifference = now.difference(dataTime);
-      
+
       final isDeactivated = timeDifference.inMinutes > 5;
-      
+
       if (isDeactivated) {
-        developer.log('Plant is deactivated - latest data is ${timeDifference.inMinutes} minutes old');
+        developer.log(
+          'Plant is deactivated - latest data is ${timeDifference.inMinutes} minutes old',
+        );
       } else {
-        developer.log('Plant is active - latest data is ${timeDifference.inMinutes} minutes old');
+        developer.log(
+          'Plant is active - latest data is ${timeDifference.inMinutes} minutes old',
+        );
       }
-      
+
       return isDeactivated;
     } catch (e) {
       developer.log('Error checking plant deactivation status: $e');
@@ -427,38 +545,48 @@ class SensorApiService {
   }) async {
     try {
       developer.log('Fetching historical data for last $hours hours');
-      
+
       // Since the API returns data in reverse chronological order,
       // we'll fetch more records and filter by time
       final response = await getSensorData(page: 1, limit: maxRecords);
-      
+
       final now = DateTime.now();
       final cutoffTime = now.subtract(Duration(hours: hours));
-      
+
       // Filter data within the specified time range
       final filteredData = response.data.where((data) {
         final dataTime = data.parsedTimestamp;
         return dataTime.isAfter(cutoffTime);
       }).toList();
-      
+
       // If no data within the specified time range, return older available data
       if (filteredData.isEmpty && response.data.isNotEmpty) {
-        developer.log('No data within $hours hours, showing older available data');
-        
+        developer.log(
+          'No data within $hours hours, showing older available data',
+        );
+
         // Take the most recent records available (up to 100 for performance)
         final fallbackData = response.data.take(100).toList();
-        
+
         // Sort by timestamp (oldest first for charting)
-        fallbackData.sort((a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp));
-        
-        developer.log('Showing ${fallbackData.length} older records as fallback');
+        fallbackData.sort(
+          (a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp),
+        );
+
+        developer.log(
+          'Showing ${fallbackData.length} older records as fallback',
+        );
         return fallbackData;
       }
-      
+
       // Sort by timestamp (oldest first for charting)
-      filteredData.sort((a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp));
-      
-      developer.log('Filtered ${filteredData.length} records within $hours hours');
+      filteredData.sort(
+        (a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp),
+      );
+
+      developer.log(
+        'Filtered ${filteredData.length} records within $hours hours',
+      );
       return filteredData;
     } catch (e) {
       developer.log('Error fetching historical data: $e');
@@ -474,38 +602,48 @@ class SensorApiService {
   }) async {
     try {
       developer.log('Fetching historical SCC data for last $hours hours');
-      
+
       // Since the API returns data in reverse chronological order,
       // we'll fetch more records and filter by time
       final response = await getSCCData(page: 1, limit: maxRecords);
-      
+
       final now = DateTime.now();
       final cutoffTime = now.subtract(Duration(hours: hours));
-      
+
       // Filter data within the specified time range
       final filteredData = response.data.where((data) {
         final dataTime = data.parsedTimestamp;
         return dataTime.isAfter(cutoffTime);
       }).toList();
-      
+
       // If no data within the specified time range, return older available data
       if (filteredData.isEmpty && response.data.isNotEmpty) {
-        developer.log('No SCC data within $hours hours, showing older available data');
-        
+        developer.log(
+          'No SCC data within $hours hours, showing older available data',
+        );
+
         // Take the most recent records available (up to 100 for performance)
         final fallbackData = response.data.take(100).toList();
-        
+
         // Sort by timestamp (oldest first for charting)
-        fallbackData.sort((a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp));
-        
-        developer.log('Showing ${fallbackData.length} older SCC records as fallback');
+        fallbackData.sort(
+          (a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp),
+        );
+
+        developer.log(
+          'Showing ${fallbackData.length} older SCC records as fallback',
+        );
         return fallbackData;
       }
-      
+
       // Sort by timestamp (oldest first for charting)
-      filteredData.sort((a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp));
-      
-      developer.log('Filtered ${filteredData.length} SCC records within $hours hours');
+      filteredData.sort(
+        (a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp),
+      );
+
+      developer.log(
+        'Filtered ${filteredData.length} SCC records within $hours hours',
+      );
       return filteredData;
     } catch (e) {
       developer.log('Error fetching historical SCC data: $e');
@@ -520,22 +658,28 @@ class SensorApiService {
     int maxRecords = 1000,
   }) async {
     try {
-      developer.log('Fetching historical data from ${fromDate.toIso8601String()} to ${toDate.toIso8601String()}');
-      
+      developer.log(
+        'Fetching historical data from ${fromDate.toIso8601String()} to ${toDate.toIso8601String()}',
+      );
+
       // Since the API returns data in reverse chronological order,
       // we'll fetch more records and filter by date range
       final response = await getSensorData(page: 1, limit: maxRecords);
-      
+
       // Filter data within the specified date range
       final filteredData = response.data.where((data) {
         final dataTime = data.parsedTimestamp;
         return dataTime.isAfter(fromDate) && dataTime.isBefore(toDate);
       }).toList();
-      
+
       // Sort by timestamp (oldest first for charting)
-      filteredData.sort((a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp));
-      
-      developer.log('Filtered ${filteredData.length} records within date range');
+      filteredData.sort(
+        (a, b) => a.parsedTimestamp.compareTo(b.parsedTimestamp),
+      );
+
+      developer.log(
+        'Filtered ${filteredData.length} records within date range',
+      );
       return filteredData;
     } catch (e) {
       developer.log('Error fetching historical data by date range: $e');
@@ -550,7 +694,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final latestData = await getLatestSensorData();
         if (!_isDisposed) {
           yield latestData;
@@ -561,7 +705,7 @@ class SensorApiService {
           yield null;
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -575,7 +719,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final latestData = await getLatestSCCData();
         if (!_isDisposed) {
           yield latestData;
@@ -586,7 +730,7 @@ class SensorApiService {
           yield null;
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -600,7 +744,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final latestData = await getLatestSCCDataWithFallback();
         if (!_isDisposed) {
           yield latestData;
@@ -611,7 +755,7 @@ class SensorApiService {
           yield null;
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -626,7 +770,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final historicalData = await getHistoricalData(hours: hours);
         if (!_isDisposed) {
           yield historicalData;
@@ -637,7 +781,7 @@ class SensorApiService {
           yield [];
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -652,7 +796,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final historicalData = await getHistoricalSCCData(hours: hours);
         if (!_isDisposed) {
           yield historicalData;
@@ -663,7 +807,7 @@ class SensorApiService {
           yield [];
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -679,7 +823,7 @@ class SensorApiService {
     while (!_isDisposed) {
       try {
         if (_isDisposed) break;
-        
+
         final historicalData = await getHistoricalDataByDateRange(
           fromDate: fromDate,
           toDate: toDate,
@@ -693,7 +837,7 @@ class SensorApiService {
           yield [];
         }
       }
-      
+
       if (!_isDisposed) {
         await Future.delayed(interval);
       }
@@ -702,7 +846,7 @@ class SensorApiService {
 
   /// Gets sensor data for a specific metric type
   List<MetricDataPoint> getMetricDataPoints(
-    List<SensorData> sensorDataList, 
+    List<SensorData> sensorDataList,
     SensorMetric metric,
   ) {
     try {
@@ -748,8 +892,5 @@ class MetricDataPoint {
   final DateTime timestamp;
   final double value;
 
-  const MetricDataPoint({
-    required this.timestamp,
-    required this.value,
-  });
+  const MetricDataPoint({required this.timestamp, required this.value});
 }
