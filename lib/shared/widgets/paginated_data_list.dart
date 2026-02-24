@@ -6,12 +6,14 @@ class PaginatedDataList extends StatefulWidget {
   final List<SensorData> data;
   final SensorMetric metric;
   final Color primaryColor;
+  final bool showZeroValues;
 
   const PaginatedDataList({
     Key? key,
     required this.data,
     required this.metric,
     required this.primaryColor,
+    this.showZeroValues = false,
   }) : super(key: key);
 
   @override
@@ -48,10 +50,9 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   int _getMaxPage() {
     if (widget.data.isEmpty) return 0;
     
-    final filteredData = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
+    final filteredData = widget.showZeroValues
+        ? widget.data
+        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
     if (filteredData.isEmpty) return 0;
     return ((filteredData.length - 1) / _itemsPerPage).floor();
   }
@@ -59,10 +60,9 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   List<SensorData> _getCurrentPageData() {
     if (widget.data.isEmpty) return [];
     
-    final filteredData = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
+    final filteredData = widget.showZeroValues
+        ? widget.data
+        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
     if (filteredData.isEmpty) return [];
 
     final startIndex = _currentPage * _itemsPerPage;
@@ -464,10 +464,8 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   }
 
   int _getFilteredDataCount() {
-    return widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).length;
+    if (widget.showZeroValues) return widget.data.length;
+    return widget.data.where((data) => widget.metric.getValue(data) != 0.0).length;
   }
 
   Map<String, double> _calculateQuickStats(List<SensorData> pageData) {
@@ -476,10 +474,9 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
     }
 
     final values = pageData.map((data) => widget.metric.getValue(data)).toList();
-    final filteredAll = widget.data.where((data) {
-      final value = widget.metric.getValue(data);
-      return value != 0.0;
-    }).toList();
+    final filteredAll = widget.showZeroValues
+        ? widget.data
+        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
     final latest = filteredAll.isNotEmpty ? widget.metric.getValue(filteredAll.last) : 0.0;
     final average = values.reduce((a, b) => a + b) / values.length;
 

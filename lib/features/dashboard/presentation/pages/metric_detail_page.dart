@@ -31,15 +31,18 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
   @override
   void initState() {
     super.initState();
-    developer.log('MetricDetailPage initialized for ${widget.metric.displayName} (${widget.systemType})');
-    _historicalDataStream = widget.systemType == 'SCC' 
+    developer.log(
+      'MetricDetailPage initialized for ${widget.metric.displayName} (${widget.systemType})',
+    );
+    _historicalDataStream = widget.systemType == 'SCC'
         ? _apiService.getHistoricalSCCDataStream(hours: _selectedHours)
         : _apiService.getHistoricalDataStream(hours: _selectedHours);
   }
 
-
-
   @override
+  bool get _showZeroValues =>
+      widget.metric == SensorMetric.ga1 || widget.metric == SensorMetric.ga2;
+
   Widget build(BuildContext context) {
     try {
       return Scaffold(
@@ -62,7 +65,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
           ),
           actions: [
             StreamBuilder<SensorData?>(
-              stream: widget.systemType == 'SCC' 
+              stream: widget.systemType == 'SCC'
                   ? _apiService.getLatestSCCDataWithFallbackStream()
                   : _apiService.getLatestSensorDataStream(),
               builder: (context, snapshot) {
@@ -78,7 +81,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 768;
-            
+
             if (isMobile) {
               return Container(
                 color: const Color(0xFF0A0A0A),
@@ -178,32 +181,42 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                             stream: _historicalDataStream,
                             builder: (context, snapshot) {
                               if (snapshot.hasError) {
-                                return _buildErrorWidget(snapshot.error.toString());
+                                return _buildErrorWidget(
+                                  snapshot.error.toString(),
+                                );
                               }
 
                               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                                 return _buildLoadingWidget();
                               }
 
-                              final metricDataPoints = _apiService.getMetricDataPoints(
-                                snapshot.data!,
-                                widget.metric,
-                              );
+                              final metricDataPoints = _apiService
+                                  .getMetricDataPoints(
+                                    snapshot.data!,
+                                    widget.metric,
+                                  );
 
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
                                 child: ModernMetricChart(
-                                  data: metricDataPoints.map((point) => MetricData(
-                                    timestamp: point.timestamp,
-                                    value: point.value,
-                                    metricType: widget.metric.key,
-                                    unit: widget.metric.unit,
-                                  )).toList(),
+                                  data: metricDataPoints
+                                      .map(
+                                        (point) => MetricData(
+                                          timestamp: point.timestamp,
+                                          value: point.value,
+                                          metricType: widget.metric.key,
+                                          unit: widget.metric.unit,
+                                        ),
+                                      )
+                                      .toList(),
                                   title: widget.metric.displayName,
                                   unit: widget.metric.unit,
                                   minValue: 0,
                                   maxValue: double.infinity,
-                                  primaryColor: _getColorForMetric(widget.metric),
+                                  primaryColor: _getColorForMetric(
+                                    widget.metric,
+                                  ),
+                                  showZeroValues: _showZeroValues,
                                 ),
                               );
                             },
@@ -262,10 +275,13 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                                       ),
                                     ),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          widget.currentValue.toStringAsFixed(2),
+                                          widget.currentValue.toStringAsFixed(
+                                            2,
+                                          ),
                                           style: const TextStyle(
                                             color: Color(0xFF4169E1),
                                             fontSize: 72,
@@ -315,14 +331,21 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                                 ],
                               ),
                               child: StreamBuilder<List<SensorData>>(
-                                stream: widget.systemType == 'SCC' 
-                                    ? _apiService.getHistoricalSCCDataStream(hours: 1)
-                                    : _apiService.getHistoricalDataStream(hours: 1),
+                                stream: widget.systemType == 'SCC'
+                                    ? _apiService.getHistoricalSCCDataStream(
+                                        hours: 1,
+                                      )
+                                    : _apiService.getHistoricalDataStream(
+                                        hours: 1,
+                                      ),
                                 builder: (context, snapshot) {
                                   return PaginatedDataList(
                                     data: snapshot.data ?? [],
                                     metric: widget.metric,
-                                    primaryColor: _getColorForMetric(widget.metric),
+                                    primaryColor: _getColorForMetric(
+                                      widget.metric,
+                                    ),
+                                    showZeroValues: _showZeroValues,
                                   );
                                 },
                               ),
@@ -332,7 +355,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                       ),
                     ),
                   ),
-                  
+
                   // Right Column - Main Chart
                   Flexible(
                     flex: 7,
@@ -341,9 +364,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A1A1A),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.withOpacity(0.1),
-                        ),
+                        border: Border.all(color: Colors.grey.withOpacity(0.1)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
@@ -363,25 +384,31 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                             return _buildLoadingWidget();
                           }
 
-                          final metricDataPoints = _apiService.getMetricDataPoints(
-                            snapshot.data!,
-                            widget.metric,
-                          );
+                          final metricDataPoints = _apiService
+                              .getMetricDataPoints(
+                                snapshot.data!,
+                                widget.metric,
+                              );
 
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: ModernMetricChart(
-                              data: metricDataPoints.map((point) => MetricData(
-                                timestamp: point.timestamp,
-                                value: point.value,
-                                metricType: widget.metric.key,
-                                unit: widget.metric.unit,
-                              )).toList(),
+                              data: metricDataPoints
+                                  .map(
+                                    (point) => MetricData(
+                                      timestamp: point.timestamp,
+                                      value: point.value,
+                                      metricType: widget.metric.key,
+                                      unit: widget.metric.unit,
+                                    ),
+                                  )
+                                  .toList(),
                               title: widget.metric.displayName,
                               unit: widget.metric.unit,
                               minValue: 0,
                               maxValue: double.infinity,
                               primaryColor: _getColorForMetric(widget.metric),
+                              showZeroValues: _showZeroValues,
                             ),
                           );
                         },
@@ -422,7 +449,11 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.red.withOpacity(0.3)),
               ),
-              child: const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              child: const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 48,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -441,7 +472,10 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.withOpacity(0.2),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -454,15 +488,16 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
     );
   }
 
-
   Widget _buildPlantStatusIndicator(SensorData? sensorData) {
     try {
       final isDeactivated = _apiService.isPlantDeactivated(sensorData);
-      
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isDeactivated ? Colors.red.withOpacity(0.2) : Colors.green.withOpacity(0.2),
+          color: isDeactivated
+              ? Colors.red.withOpacity(0.2)
+              : Colors.green.withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDeactivated ? Colors.red : Colors.green,
@@ -560,7 +595,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
         return const Color(0xFF22C55E); // Green for compressor status
       case SensorMetric.boosterStatus:
         return const Color(0xFF0EA5E9); // Sky for booster status
-      
+
       // SCC metrics
       case SensorMetric.pressure:
         return const Color(0xFF8B5CF6); // Purple for pressure
@@ -590,7 +625,7 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
         return const Color(0xFF6366F1); // Indigo for voltage
       case SensorMetric.power:
         return const Color(0xFFEF4444); // Red for power
-      
+
       // Additional merged SCC metrics
       case SensorMetric.oxyPurity:
         return const Color(0xFF10B981); // Green for oxygen purity
@@ -603,9 +638,9 @@ class _MetricDetailPageState extends State<MetricDetailPage> {
       case SensorMetric.recPress:
         return const Color(0xFFF59E0B); // Amber for recovery pressure
 
-        //add default
-        default:
-          return const Color(0xFF64748B); // Slate for default
+      //add default
+      default:
+        return const Color(0xFF64748B); // Slate for default
     }
   }
 
