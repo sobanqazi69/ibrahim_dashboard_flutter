@@ -49,26 +49,16 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
 
   int _getMaxPage() {
     if (widget.data.isEmpty) return 0;
-    
-    final filteredData = widget.showZeroValues
-        ? widget.data
-        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
-    if (filteredData.isEmpty) return 0;
-    return ((filteredData.length - 1) / _itemsPerPage).floor();
+    return ((widget.data.length - 1) / _itemsPerPage).floor();
   }
 
   List<SensorData> _getCurrentPageData() {
     if (widget.data.isEmpty) return [];
     
-    final filteredData = widget.showZeroValues
-        ? widget.data
-        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
-    if (filteredData.isEmpty) return [];
-
     final startIndex = _currentPage * _itemsPerPage;
-    final endIndex = math.min(startIndex + _itemsPerPage, filteredData.length);
+    final endIndex = math.min(startIndex + _itemsPerPage, widget.data.length);
 
-    return filteredData.sublist(startIndex, endIndex);
+    return widget.data.sublist(startIndex, endIndex);
   }
 
   void _goToPage(int page) {
@@ -464,8 +454,7 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
   }
 
   int _getFilteredDataCount() {
-    if (widget.showZeroValues) return widget.data.length;
-    return widget.data.where((data) => widget.metric.getValue(data) != 0.0).length;
+    return widget.data.length;
   }
 
   Map<String, double> _calculateQuickStats(List<SensorData> pageData) {
@@ -474,10 +463,7 @@ class _PaginatedDataListState extends State<PaginatedDataList> {
     }
 
     final values = pageData.map((data) => widget.metric.getValue(data)).toList();
-    final filteredAll = widget.showZeroValues
-        ? widget.data
-        : widget.data.where((data) => widget.metric.getValue(data) != 0.0).toList();
-    final latest = filteredAll.isNotEmpty ? widget.metric.getValue(filteredAll.last) : 0.0;
+    final latest = widget.data.isNotEmpty ? widget.metric.getValue(widget.data.last) : 0.0;
     final average = values.reduce((a, b) => a + b) / values.length;
 
     return {

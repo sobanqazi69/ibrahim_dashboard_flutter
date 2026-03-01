@@ -65,9 +65,7 @@ class _ModernMetricChartState extends State<ModernMetricChart>
   List<MetricData> get _visibleData {
     if (widget.data.isEmpty) return [];
 
-    final filteredData = widget.showZeroValues
-        ? widget.data
-        : widget.data.where((data) => data.value != 0.0).toList();
+    final filteredData = widget.data;
     if (filteredData.isEmpty) return [];
 
     // Calculate how many data points to show based on zoom level

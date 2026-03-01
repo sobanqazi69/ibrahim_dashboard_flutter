@@ -373,8 +373,7 @@ enum SensorMetric {
         case SensorMetric.boosterRunningHours:
           return data.boosterHour ?? 0.0;
         case SensorMetric.boosterPressure:
-          final raw = data.oxyFlow ?? 0.0;
-          return raw < 10 ? 0.0 : raw;
+          return data.oxyFlow ?? 0.0;
         case SensorMetric.dischargePressure:
           return data.airOutletp ?? 0.0;
         case SensorMetric.sccAmbientTemp:
